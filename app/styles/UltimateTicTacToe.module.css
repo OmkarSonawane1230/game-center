@@ -1,0 +1,228 @@
+.mainContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+.gameContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+.lobbyContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.lobbyText {
+    font-size: 1.1rem;
+    color: var(--text-light);
+    margin-bottom: 2rem;
+    max-width: 400px;
+}
+
+/* Typography and Status */
+.gameTitle {
+    font-size: 3rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 500;
+    min-height: 48px;
+}
+
+/* Boards and Cells */
+.mainBoard {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    width: clamp(300px, 90vw, 600px);
+    height: clamp(300px, 90vw, 600px);
+    background-color: var(--primary);
+    border: 3px solid var(--primary);
+    border-radius: 10px;
+    padding: 10px;
+    gap: 10px;
+}
+
+.smallBoard {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    background-color: var(--background-med);
+    gap: 5px;
+    padding: 5px;
+    border-radius: 5px;
+    transition: box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.smallBoard.active {
+    box-shadow: 0 0 20px 5px var(--accent-o);
+    border-color: var(--accent-o);
+}
+
+.smallBoard.won {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.smallBoard.draw {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.cell {
+    aspect-ratio: 1;
+    background-color: var(--background-dark);
+    border-radius: 5px;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.cell:hover {
+    background-color: var(--primary);
+}
+
+.icon {
+    width: 70%;
+    height: 70%;
+}
+
+/* Modal Styles */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.modalContent {
+    background-color: var(--background-med);
+    padding: 3rem 4rem;
+    border-radius: 1rem;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.modalIcon {
+    color: var(--accent-o);
+}
+
+.modalMessage {
+    font-size: 2rem;
+    font-weight: 500;
+}
+
+.modalButton {
+    background-color: var(--accent-x);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modalButton:hover {
+    background-color: #c93d54;
+    transform: translateY(-2px);
+}
+
+/* Loading/Error Styles */
+.loadingContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-size: 1.5rem;
+    gap: 1rem;
+}
+
+.spinner {
+    animation: spin 1.5s linear infinite;
+}
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Multiplayer Specific UI */
+.playerInfo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.2rem;
+    background-color: var(--primary);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.inviteBox {
+    display: flex;
+    width: 100%;
+    max-width: 450px;
+    margin-top: 1rem;
+}
+
+.inviteBox input {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--background-dark);
+    color: var(--text-light);
+    border-radius: 8px 0 0 8px;
+    border-right: none;
+    outline: none;
+}
+
+.inviteBox button {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--primary);
+    color: white;
+    cursor: pointer;
+    border-radius: 0 8px 8px 0;
+    transition: background-color 0.2s ease;
+}
+
+.inviteBox button:hover {
+    background-color: #1a4a82;
+}
