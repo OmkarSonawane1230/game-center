@@ -9,9 +9,9 @@ interface CellProps {
 
 export default function Cell({ value, onCellClick }: CellProps) {
     const icon = value === 'X' 
-        ? <X color="var(--accent-x)" className={styles.icon}/>
+        ? <X color="var(--player-x)" className={styles.icon} strokeWidth={3}/>
         : value === 'O' 
-        ? <Circle color="var(--accent-o)" className={styles.icon}/>
+        ? <Circle color="var(--player-o)" className={styles.icon} strokeWidth={3}/>
         : null;
 
     return (

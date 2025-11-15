@@ -6,11 +6,12 @@ interface BoardProps {
   smallBoards: SmallBoardState[];
   onPlay: (boardIdx: number, squareIdx: number) => void;
   activeBoard: number | null;
+  disabled?: boolean;
 }
 
-export default function Board({ smallBoards, onPlay, activeBoard }: BoardProps) {
+export default function Board({ smallBoards, onPlay, activeBoard, disabled = false }: BoardProps) {
   return (
-    <div className={styles.mainBoard}>
+    <div className={`${styles.mainBoard} ${disabled ? styles.disabled : ''}`}>
       {smallBoards.map((board, i) => (
         <SmallBoard
           key={i}
@@ -18,8 +19,8 @@ export default function Board({ smallBoards, onPlay, activeBoard }: BoardProps) 
           squares={board.squares}
           winner={board.winner}
           onPlay={onPlay}
-          isActive={activeBoard === null || activeBoard === i}
-          isClickable={!board.winner}
+          isActive={!disabled && (activeBoard === null || activeBoard === i)}
+          isClickable={!disabled && !board.winner}
         />
       ))}
     </div>

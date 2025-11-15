@@ -18,7 +18,10 @@ export interface GameState {
   xIsNext: boolean;
   activeBoard: number | null;
   gameWinner: BoardResult; // The overall game can be won or drawn
-  players: string[];
+  players: string[]; // Max 2 players
+  spectators: string[]; // Unlimited spectators
   status: 'waiting' | 'active' | 'finished';
   createdAt: Timestamp;
+  gamePassword?: string; // Optional password for protected games
+  isPasswordProtected: boolean;
 }

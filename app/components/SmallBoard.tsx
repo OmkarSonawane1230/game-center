@@ -22,10 +22,10 @@ const SmallBoard = ({ boardIdx, squares, winner, onPlay, isActive, isClickable }
   
     if (winner && winner !== 'Draw') {
       const WinnerIcon = winner === 'X' ? X : Circle;
-      const winnerColor = winner === 'X' ? 'var(--accent-x)' : 'var(--accent-o)';
+      const winnerColor = winner === 'X' ? 'var(--player-x)' : 'var(--player-o)';
       return (
         <div className={boardClasses}>
-          <WinnerIcon size="80%" color={winnerColor} strokeWidth={2}/>
+          <WinnerIcon size="80%" color={winnerColor} strokeWidth={3}/>
         </div>
       );
     }

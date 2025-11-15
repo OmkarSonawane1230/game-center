@@ -5,7 +5,7 @@ import GameModal from './GameModal';
 import { db } from '../firebase/config';
 import { doc, getDoc, onSnapshot, updateDoc, arrayUnion } from 'firebase/firestore';
 import styles from '../styles/UltimateTicTacToe.module.css';
-import { X, Circle, ClipboardCopy, Loader2 } from 'lucide-react';
+import { X, Circle, ClipboardCopy, Loader2, Users, Eye, Lock } from 'lucide-react';
 import { GameState, SquareValue, BoardResult } from '../types';
 
 interface GameProps {
@@ -29,18 +29,19 @@ export default function Game({ gameId }: GameProps) {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [playerId, setPlayerId] = useState<string>('');
-    const [playerRole, setPlayerRole] = useState<'X' | 'O' | null>(null);
+    const [playerRole, setPlayerRole] = useState<'X' | 'O' | 'spectator' | null>(null);
+    const [showPasswordPrompt, setShowPasswordPrompt] = useState<boolean>(false);
+    const [passwordInput, setPasswordInput] = useState<string>('');
+    const [passwordError, setPasswordError] = useState<string>('');
 
     useEffect(() => {
         setPlayerId(getPlayerId());
     }, []);
 
     useEffect(() => {
-        // --- START DEBUG LOGS ---
         console.log("--- Starting useEffect for Game ---");
         console.log("Game ID:", gameId);
         console.log("Player ID:", playerId);
-        console.log("Is Project ID loaded?", process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ? `Yes: ${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}`: "No, environment variable is missing!");
 
         if (!gameId || !playerId) {
             console.log("Exiting early: gameId or playerId is missing.");
@@ -52,35 +53,71 @@ export default function Game({ gameId }: GameProps) {
         const gameRef = doc(db, 'games', gameId);
         
         const unsubscribe = onSnapshot(gameRef,
-            (doc) => {
-                console.log("%c✅ SUCCESS: Firestore data received!", "color: green; font-weight: bold;");
+            async (doc) => {
+                console.log("✅ SUCCESS: Firestore data received!");
                 if (doc.exists()) {
                     console.log("Document data:", doc.data());
                     const data = doc.data() as GameState;
+                    
+                    // Check if game is password protected and user hasn't verified
+                    if (data.isPasswordProtected && !sessionStorage.getItem(`game_${gameId}_password`)) {
+                        setGameState(data);
+                        setShowPasswordPrompt(true);
+                        setLoading(false);
+                        return;
+                    }
+
                     setGameState(data);
                     
-                    if (data.players.length < 2 && !data.players.includes(playerId)) {
-                        console.log("Player not in game, attempting to join...");
-                        updateDoc(gameRef, {
-                            players: arrayUnion(playerId),
-                            status: data.players.length === 1 ? 'active' : 'waiting'
-                        });
+                    // Determine player role
+                    const isPlayer1 = data.players[0] === playerId;
+                    const isPlayer2 = data.players[1] === playerId;
+                    const isSpectator = data.spectators.includes(playerId);
+
+                    if (isPlayer1) {
+                        setPlayerRole('X');
+                    } else if (isPlayer2) {
+                        setPlayerRole('O');
+                    } else if (isSpectator) {
+                        setPlayerRole('spectator');
+                    } else {
+                        // New user joining - decide if player or spectator
+                        if (data.players.length < 2) {
+                            // Can join as player
+                            try {
+                                await updateDoc(gameRef, {
+                                    players: arrayUnion(playerId),
+                                    status: data.players.length === 1 ? 'active' : 'waiting'
+                                });
+                                setPlayerRole(data.players.length === 0 ? 'X' : 'O');
+                            } catch (err) {
+                                console.error("Error joining as player:", err);
+                            }
+                        } else {
+                            // Must join as spectator
+                            try {
+                                await updateDoc(gameRef, {
+                                    spectators: arrayUnion(playerId)
+                                });
+                                setPlayerRole('spectator');
+                            } catch (err) {
+                                console.error("Error joining as spectator:", err);
+                            }
+                        }
                     }
                     
-                    if (data.players[0] === playerId) setPlayerRole('X');
-                    if (data.players[1] === playerId) setPlayerRole('O');
                     setError(null);
                 } else {
                     console.warn("Document does not exist in Firestore.");
-                    setError("Game not found. It may have been deleted.");
+                    setError("Game not found. The game ID may be invalid or the game was deleted.");
                     setGameState(null);
                 }
-                setLoading(false); // Should stop loading here on success
+                setLoading(false);
             },
             (err) => {
-                console.error("%c❌ ERROR: Firebase Snapshot Error!", "color: red; font-weight: bold;", err);
-                setError("Failed to connect to the game. Check Firestore rules and console for errors.");
-                setLoading(false); // Should stop loading here on error
+                console.error("❌ ERROR: Firebase Snapshot Error!", err);
+                setError("Failed to connect to the game. Please check your internet connection.");
+                setLoading(false);
             }
         );
 
@@ -88,13 +125,30 @@ export default function Game({ gameId }: GameProps) {
             console.log("Cleaning up Firebase listener.");
             unsubscribe();
         };
-        // --- END DEBUG LOGS ---
     }, [gameId, playerId]);
+
+    const handlePasswordSubmit = async () => {
+        if (!gameState || !passwordInput.trim()) {
+            setPasswordError('Please enter a password');
+            return;
+        }
+
+        if (passwordInput.trim() === gameState.gamePassword) {
+            sessionStorage.setItem(`game_${gameId}_password`, passwordInput.trim());
+            setShowPasswordPrompt(false);
+            setPasswordError('');
+            setPasswordInput('');
+        } else {
+            setPasswordError('Incorrect password. Please try again.');
+        }
+    };
     
-    // ... NO OTHER CHANGES BELOW THIS LINE ...
     const handlePlay = async (boardIdx: number, squareIdx: number): Promise<void> => {
         if (!gameState) return;
         const { boardState, gameWinner, activeBoard, players, xIsNext } = gameState;
+
+        // Spectators cannot play
+        if (playerRole === 'spectator') return;
 
         if (gameWinner || boardState[boardIdx].squares[squareIdx] || boardState[boardIdx].winner) return;
         if (players.length < 2) return;
@@ -137,23 +191,65 @@ export default function Game({ gameId }: GameProps) {
     };
 
     const copyInviteLink = (): void => {
-        navigator.clipboard.writeText(window.location.href);
-        alert('Invite link copied!');
+        const link = window.location.href;
+        const message = gameState?.isPasswordProtected 
+            ? `${link}\nPassword: ${gameState.gamePassword}` 
+            : link;
+        navigator.clipboard.writeText(message);
+        alert(gameState?.isPasswordProtected ? 'Invite link and password copied!' : 'Invite link copied!');
     };
 
     if (loading) return <div className={styles.loadingContainer}><Loader2 className={styles.spinner} /> Loading Game...</div>;
     if (error) return <div className={styles.loadingContainer}>{error}</div>;
     if (!gameState) return <div className={styles.loadingContainer}>Game data could not be loaded.</div>;
 
-    const { gameWinner, status, players, xIsNext } = gameState;
+    // Password prompt
+    if (showPasswordPrompt) {
+        return (
+            <div className={styles.gameContainer}>
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modalContent}>
+                        <Lock size={64} className={styles.modalIcon} />
+                        <h2 className={styles.modalMessage}>Password Protected Game</h2>
+                        <p>This game requires a password to join.</p>
+                        <div className={styles.passwordInput}>
+                            <input
+                                type="text"
+                                placeholder="Enter game password"
+                                value={passwordInput}
+                                onChange={(e) => {
+                                    setPasswordInput(e.target.value);
+                                    setPasswordError('');
+                                }}
+                                onKeyPress={(e) => e.key === 'Enter' && handlePasswordSubmit()}
+                                autoFocus
+                            />
+                        </div>
+                        {passwordError && <p className={styles.errorText}>{passwordError}</p>}
+                        <button className={styles.modalButton} onClick={handlePasswordSubmit}>
+                            Join Game
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    const { gameWinner, status, players, spectators, xIsNext } = gameState;
     const isWaitingForOpponent = status === 'waiting' || players.length < 2;
     const CurrentTurnIcon = xIsNext ? X : Circle;
-    const turnColor = xIsNext ? 'var(--accent-x)' : 'var(--accent-o)';
+    const turnColor = xIsNext ? 'var(--player-x)' : 'var(--player-o)';
     
     let statusText: string;
-    if (isWaitingForOpponent) statusText = "Waiting for opponent...";
-    else if ((xIsNext && playerRole === 'X') || (!xIsNext && playerRole === 'O')) statusText = "Your Turn";
-    else statusText = "Opponent's Turn";
+    if (playerRole === 'spectator') {
+        statusText = "Spectating";
+    } else if (isWaitingForOpponent) {
+        statusText = "Waiting for opponent...";
+    } else if ((xIsNext && playerRole === 'X') || (!xIsNext && playerRole === 'O')) {
+        statusText = "Your Turn";
+    } else {
+        statusText = "Opponent's Turn";
+    }
 
     return (
         <div className={styles.gameContainer}>
@@ -165,11 +261,16 @@ export default function Game({ gameId }: GameProps) {
                     isPlayerOne={players.indexOf(playerId) === 0}
                 />
             )}
-             {isWaitingForOpponent && !gameWinner && (
+             {isWaitingForOpponent && !gameWinner && playerRole !== 'spectator' && (
                 <div className={styles.modalOverlay}>
                     <div className={styles.modalContent}>
                         <h2 className={styles.modalMessage}>Waiting for Opponent</h2>
                         <p>Share this link with a friend to play!</p>
+                        {gameState.isPasswordProtected && (
+                            <p className={styles.passwordInfo}>
+                                <Lock size={16} /> Password: <strong>{gameState.gamePassword}</strong>
+                            </p>
+                        )}
                         <div className={styles.inviteBox}>
                             <input type="text" readOnly value={typeof window !== "undefined" ? window.location.href : ""} />
                             <button onClick={copyInviteLink}><ClipboardCopy/></button>
@@ -179,19 +280,43 @@ export default function Game({ gameId }: GameProps) {
             )}
             
             <h1 className={styles.gameTitle}>Ultimate Tic-Tac-Toe</h1>
-            <div className={styles.status} style={{color: turnColor}}>
-                 <p>{statusText}</p>
-                 {!isWaitingForOpponent && <CurrentTurnIcon size={32} />} 
+            
+            <div className={styles.gameInfo}>
+                <div className={styles.status} style={{color: playerRole === 'spectator' ? '#888' : turnColor}}>
+                     <p>{statusText}</p>
+                     {!isWaitingForOpponent && playerRole !== 'spectator' && <CurrentTurnIcon size={32} />} 
+                     {playerRole === 'spectator' && <Eye size={32} />}
+                </div>
+                
+                <div className={styles.playerCount}>
+                    <Users size={20} />
+                    <span>{players.length}/2 Players</span>
+                    {spectators.length > 0 && (
+                        <>
+                            <Eye size={16} style={{marginLeft: '8px'}} />
+                            <span>{spectators.length} Spectator{spectators.length !== 1 ? 's' : ''}</span>
+                        </>
+                    )}
+                </div>
             </div>
             
             <Board 
                 smallBoards={gameState.boardState}
                 onPlay={handlePlay}
                 activeBoard={gameState.activeBoard}
+                disabled={playerRole === 'spectator'}
             />
 
             <div className={styles.playerInfo}>
-                You are playing as: {playerRole === 'X' ? <X color='var(--accent-x)'/> : playerRole === 'O' ? <Circle color='var(--accent-o)'/> : 'Spectator'}
+                {playerRole === 'spectator' ? (
+                    <span className={styles.spectatorBadge}>
+                        <Eye size={20} /> Spectator Mode - You are watching this game
+                    </span>
+                ) : (
+                    <>
+                        You are playing as: {playerRole === 'X' ? <X color='var(--player-x)'/> : playerRole === 'O' ? <Circle color='var(--player-o)'/> : 'Loading...'}
+                    </>
+                )}
             </div>
         </div>
     );
