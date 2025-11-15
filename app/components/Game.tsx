@@ -5,7 +5,8 @@ import GameModal from './GameModal';
 import { db } from '../firebase/config';
 import { doc, onSnapshot, updateDoc, arrayUnion, deleteDoc, increment } from 'firebase/firestore';
 import styles from '../styles/UltimateTicTacToe.module.css';
-import { X, Circle, ClipboardCopy, Loader2, Users, Eye } from 'lucide-react';
+import { X, Circle, ClipboardCopy, Loader2, Users, Eye, Home } from 'lucide-react';
+import Link from 'next/link';
 import { GameState, SquareValue, BoardResult, GamePlayer } from '../types';
 import { getCurrentPlayer } from '../utils/PlayerAuth';
 import PlayerAuth from './PlayerAuth';
@@ -240,6 +241,11 @@ export default function Game({ gameId }: GameProps) {
 
   return (
     <div className={styles.gameContainer}>
+      <Link href="/" className={styles.homeButton} data-testid="home-button">
+        <Home size={16} />
+        <span>Home</span>
+      </Link>
+
       {gameWinner && (
         <GameModal
           message={getWinnerMessage()}

@@ -3,7 +3,7 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  padding: 2rem;
+  padding: 1rem;
   position: relative;
   z-index: 1;
 }
@@ -11,23 +11,35 @@
 .container {
   text-align: center;
   background: var(--bg-card);
-  backdrop-filter: blur(20px);
-  padding: 4rem 5rem;
+  padding: 2rem 3rem;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border-color);
+  border: 3px solid var(--border-accent);
   max-width: 600px;
   width: 100%;
+  position: relative;
+}
+
+.container::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  background: var(--accent-primary);
+  z-index: -1;
+  border-radius: var(--radius-lg);
+  opacity: 0.3;
 }
 
 .header {
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
 }
 
 .logo {
   color: var(--accent-primary);
-  margin-bottom: 1.5rem;
-  filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.5));
+  margin-bottom: 1rem;
   animation: float 3s ease-in-out infinite;
 }
 
@@ -36,87 +48,99 @@
     transform: translateY(0px);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-8px);
   }
 }
 
 .title {
-  font-size: 3.5rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 0.5rem;
-  letter-spacing: -0.5px;
+  font-size: clamp(1.2rem, 4vw, 2rem);
+  font-weight: 400;
+  color: var(--accent-primary);
+  margin-bottom: 1rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-shadow: 3px 3px 0px var(--accent-secondary);
 }
 
 .subtitle {
-  font-size: 1.2rem;
+  font-size: clamp(0.5rem, 2vw, 0.7rem);
   color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.profileLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--bg-tertiary);
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border-accent);
+  color: var(--text-primary);
+  font-size: 0.6rem;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  margin-bottom: 2rem;
+}
+
+.profileLink:hover {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .gameList {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .gameCard {
-  background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
-  padding: 2rem 2.5rem;
+  background: var(--bg-tertiary);
+  padding: 1.5rem;
   border-radius: var(--radius-md);
   transition: all var(--transition-normal);
-  border: 1px solid var(--border-color);
+  border: 3px solid var(--border-color);
   position: relative;
-  overflow: hidden;
   cursor: pointer;
 }
 
-.gameCard::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(255, 0, 255, 0.1));
-  opacity: 0;
-  transition: opacity var(--transition-normal);
-}
-
 .gameCard:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-glow), var(--shadow-lg);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
   border-color: var(--accent-primary);
+  background: var(--accent-primary);
 }
 
-.gameCard:hover::before {
-  opacity: 1;
+.gameCard:hover .gameTitle {
+  color: var(--bg-primary);
+}
+
+.gameCard:hover .gameDescription {
+  color: var(--bg-primary);
 }
 
 .gameTitle {
-  font-size: 1.8rem;
-  margin-bottom: 0.5rem;
-  color: var(--text-primary);
-  font-weight: 700;
+  font-size: clamp(0.7rem, 2.5vw, 1rem);
+  margin-bottom: 0.75rem;
+  color: var(--accent-primary);
+  font-weight: 400;
   position: relative;
   z-index: 1;
+  letter-spacing: 1px;
 }
 
 .gameDescription {
   color: var(--text-secondary);
   position: relative;
   z-index: 1;
-  font-size: 1.05rem;
+  font-size: clamp(0.45rem, 1.5vw, 0.6rem);
+  line-height: 1.6;
 }
 
 @media (max-width: 768px) {
   .container {
-    padding: 2.5rem 2rem;
-  }
-  
-  .title {
-    font-size: 2.5rem;
+    padding: 1.5rem 2rem;
   }
 }

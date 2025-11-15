@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react';
 import { db } from '../firebase/config';
 import { doc, getDoc, onSnapshot, updateDoc, arrayUnion, deleteDoc, increment } from 'firebase/firestore';
 import styles from '../styles/DotsAndBoxes.module.css';
-import { ClipboardCopy, Loader2, Users, Eye, Trophy } from 'lucide-react';
+import { ClipboardCopy, Loader2, Users, Eye, Trophy, Home } from 'lucide-react';
+import Link from 'next/link';
 import { DotsAndBoxesState } from '../types';
 import { getCurrentPlayer } from '../utils/PlayerAuth';
 import PlayerAuth from './PlayerAuth';
@@ -285,6 +286,11 @@ export default function DotsAndBoxesGame({ gameId }: DotsAndBoxesGameProps) {
 
   return (
     <div className={styles.gameContainer}>
+      <Link href="/" className={styles.homeButton} data-testid="home-button">
+        <Home size={16} />
+        <span>Home</span>
+      </Link>
+
       {gameState.winner && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>

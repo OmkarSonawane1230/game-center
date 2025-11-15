@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation';
 import { db } from '../firebase/config';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import styles from '../styles/UltimateTicTacToe.module.css';
-import { Box, Users } from 'lucide-react';
+import { Box, Users, Home } from 'lucide-react';
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { getCurrentPlayer } from '../utils/PlayerAuth';
 import PlayerAuth from '../components/PlayerAuth';
@@ -91,6 +92,10 @@ export default function DotsAndBoxesLobby() {
 
   return (
     <main className={styles.lobbyContainer}>
+      <Link href="/" className={styles.homeButton} data-testid="home-button">
+        <Home size={16} />
+        <span>Home</span>
+      </Link>
       <div className={styles.modalContent}>
         <Box size={64} className={styles.modalIcon} />
         <h1 className={styles.gameTitle}>Dots and Boxes</h1>

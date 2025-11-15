@@ -48,6 +48,10 @@ export default function ProfilePage() {
 
   return (
     <main className={styles.lobbyContainer}>
+      <Link href="/" className={styles.homeButton} data-testid="home-button">
+        <Home size={16} />
+        <span>Home</span>
+      </Link>
       <div className={styles.modalContent}>
         <User size={64} className={styles.modalIcon} />
         <h1 className={styles.gameTitle}>Player Profile</h1>
@@ -96,12 +100,8 @@ export default function ProfilePage() {
         </div>
 
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-          <Link href="/" className={styles.modalButton}>
-            <Home size={20} /> Home
-          </Link>
-          
-          <button className={styles.modalButton} onClick={handleLogout} style={{ background: 'linear-gradient(135deg, var(--accent-danger), var(--player-x))' }}>
-            <LogOut size={20} /> Logout
+          <button className={styles.modalButton} onClick={handleLogout} data-testid="logout-button">
+            <LogOut size={16} /> Logout
           </button>
         </div>
       </div>
