@@ -11,7 +11,7 @@
 
 .modal {
   position: fixed;
-  top: 50%;
+  top: 56%;
   left: 50%;
   transform: translate(-50%, -50%);
   background: var(--bg-secondary);
@@ -168,7 +168,6 @@
 @media (max-width: 768px) {
   .modal {
     width: 95%;
-    max-height: 90vh;
   }
   
   .title {

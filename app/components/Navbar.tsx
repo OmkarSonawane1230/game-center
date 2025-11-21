@@ -21,7 +21,7 @@ export default function Navbar() {
           <button 
             onClick={() => window.dispatchEvent(new Event('openLeaderboard'))}
             className={styles.navLink}
-            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+            style={{ cursor: 'pointer' }}
           >
             <Trophy size={18} />
             <span>Leaderboard</span>

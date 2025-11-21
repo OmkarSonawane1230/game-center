@@ -72,7 +72,7 @@ export default function ActiveGames() {
         Your Active Games
       </h3>
       
-      <div style={{ 
+      <div className='scrollable' style={{ 
         display: 'flex', 
         flexDirection: 'column', 
         gap: '0.75rem',
@@ -86,47 +86,47 @@ export default function ActiveGames() {
             href={getGameUrl(game)} 
             className={styles.gameCard}
             style={{
-              padding: '1rem',
+              padding: '1.3rem .6rem',
               display: 'flex',
               alignItems: 'center',
+              flexDirection: 'row',
               justifyContent: 'space-between',
-              gap: '0.5rem'
+              gap: '0px'
             }}
             data-testid={`active-game-${game.id}`}
           >
-            <div style={{ flex: 1 }}>
+            <div style={{ display: 'inline-flex', justifyContent: 'space-between', width: '60%' }}>
               <div style={{ 
                 fontSize: 'clamp(0.55rem, 1.8vw, 0.75rem)',
                 color: 'var(--accent-primary)',
-                marginBottom: '0.25rem',
                 fontWeight: 400
               }}>
                 {getGameTitle(game)}
               </div>
               <div style={{
-                fontSize: 'clamp(0.45rem, 1.5vw, 0.6rem)',
+                fontSize: 'clamp(0.6rem, 1.5vw, 0.7rem)',
                 color: 'var(--text-secondary)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.5rem'
               }}>
-                <Users size={12} />
+                <Users size={13} />
                 {game.players.length} player{game.players.length !== 1 ? 's' : ''}
               </div>
             </div>
             
             <div style={{
-              padding: '0.4rem 0.8rem',
+              padding: '0.4rem',
               background: game.status === 'waiting' ? 'var(--accent-warning)' : 'var(--accent-success)',
               color: 'var(--bg-primary)',
-              borderRadius: 'var(--radius-sm)',
-              fontSize: 'clamp(0.4rem, 1.2vw, 0.5rem)',
+              borderRadius: 'var(--radius-md)',
+              fontSize: 'clamp(0.5rem, 1.2vw, 0.6rem)',
               fontWeight: 400,
               display: 'flex',
               alignItems: 'center',
               gap: '0.3rem'
             }}>
-              <Clock size={10} />
+              <Clock size={13} />
               {game.status === 'waiting' ? 'Waiting' : 'In Progress'}
             </div>
           </Link>

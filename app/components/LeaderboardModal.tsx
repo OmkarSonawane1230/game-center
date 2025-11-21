@@ -76,7 +76,7 @@ export default function LeaderboardModal() {
           </button>
         </div>
         
-        <div className={styles.content}>
+        <div className={`${styles.content} scrollable`}>
           {loading ? (
             <div className={styles.loading}>Loading rankings...</div>
           ) : topPlayers.length === 0 ? (

@@ -153,3 +153,15 @@ h1, h2, h3, h4, h5, h6 {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--accent-secondary);
 }
+
+.scrollable {
+  width: 100%; /* Adjust according to your layout */
+  height: 100%; /* Adjust according to your layout */
+  overflow: scroll; /* Allows scrolling without the scrollbar */
+  -ms-overflow-style: none;  /* For Internet Explorer */
+  scrollbar-width: none;     /* For Firefox */
+}
+
+.scrollable::-webkit-scrollbar {
+  display: none;  /* Hides the scrollbar in Webkit browsers (Chrome, Safari, Edge) */
+}
