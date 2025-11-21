@@ -1,0 +1,461 @@
+.profileContainer {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  padding: 2rem 1rem;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.profileIcon {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  border: 4px solid var(--border-accent);
+  box-shadow: var(--shadow-lg);
+}
+
+.title {
+  font-family: var(--font-primary);
+  font-size: clamp(2rem, 5vw, 3rem);
+  color: var(--accent-primary);
+  text-shadow: 3px 3px 0px var(--accent-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.homeButton {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--accent-primary);
+  border: 3px solid var(--border-accent);
+  border-radius: var(--radius-md);
+  color: var(--bg-primary);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-md);
+}
+
+.homeButton:hover {
+  background: var(--accent-secondary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.section {
+  background: var(--bg-secondary);
+  border: 3px solid var(--border-accent);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.sectionIcon {
+  color: var(--accent-primary);
+}
+
+.sectionTitle {
+  font-family: var(--font-primary);
+  font-size: 1.5rem;
+  color: var(--accent-primary);
+  text-shadow: 2px 2px 0px var(--accent-secondary);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.statCard {
+  background: var(--bg-tertiary);
+  padding: 1.25rem;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border-color);
+  text-align: center;
+  transition: all var(--transition-fast);
+}
+
+.statCard:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.statIcon {
+  margin-bottom: 0.5rem;
+}
+
+.statLabel {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.leaderboardList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.leaderboardItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border-color);
+  transition: all var(--transition-fast);
+}
+
+.leaderboardItem:hover {
+  border-color: var(--accent-primary);
+  transform: translateX(5px);
+}
+
+.leaderboardItem.topThree {
+  background: linear-gradient(135deg, rgba(245, 222, 179, 0.1), rgba(218, 165, 32, 0.1));
+  border-color: var(--accent-warning);
+}
+
+.rankBadge {
+  min-width: 40px;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.playerInfo {
+  flex: 1;
+}
+
+.playerName {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.playerStats {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.playerStat {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.friendsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.friendItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border-color);
+}
+
+.friendInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.addFriendForm {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.input {
+  flex: 1;
+  padding: 0.75rem;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: all var(--transition-fast);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(245, 222, 179, 0.1);
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--accent-primary);
+  border: 2px solid var(--border-accent);
+  border-radius: var(--radius-md);
+  color: var(--bg-primary);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--accent-secondary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buttonSmall {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+.buttonDanger {
+  background: #dc3545;
+  border-color: #a02a37;
+}
+
+.buttonDanger:hover:not(:disabled) {
+  background: #c82333;
+}
+
+.buttonSuccess {
+  background: #28a745;
+  border-color: #1e7e34;
+}
+
+.buttonSuccess:hover:not(:disabled) {
+  background: #218838;
+}
+
+.notificationsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.notificationItem {
+  padding: 1rem;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border-color);
+  border-left: 4px solid var(--accent-warning);
+}
+
+.notificationHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.notificationMessage {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+
+.notificationActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-muted);
+}
+
+.emptyIcon {
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-muted);
+}
+
+.logoutSection {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.leaderboardToggleButton {
+  margin-left: auto;
+  background: var(--accent-primary);
+  border: 2px solid var(--border-accent);
+  border-radius: var(--radius-md);
+  padding: 0.5rem;
+  color: var(--bg-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.leaderboardToggleButton:hover {
+  background: var(--accent-secondary);
+  transform: scale(1.05);
+}
+
+.leaderboardSidebar {
+  position: fixed;
+  right: -450px;
+  top: 0;
+  width: 420px;
+  height: 100vh;
+  background: var(--bg-secondary);
+  border-left: 3px solid var(--border-accent);
+  padding: 1.5rem;
+  overflow-y: auto;
+  z-index: 999;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
+  transition: right 0.3s ease-out;
+}
+
+.leaderboardSidebar.leaderboardOpen {
+  right: 0;
+}
+
+.leaderboardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.leaderboardTitle {
+  font-family: var(--font-primary);
+  font-size: 1.3rem;
+  color: var(--accent-primary);
+  text-shadow: 2px 2px 0px var(--accent-secondary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.leaderboardClose {
+  background: transparent;
+  border: none;
+  font-size: 2rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.leaderboardClose:hover {
+  color: var(--accent-primary);
+  transform: scale(1.2);
+}
+
+@media (max-width: 768px) {
+  .leaderboardSidebar {
+    width: 100%;
+    right: -100%;
+  }
+  
+  .leaderboardSidebar.leaderboardOpen {
+    right: 0;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .addFriendForm {
+    flex-direction: column;
+  }
+  
+  .notificationActions {
+    flex-direction: column;
+  }
+  
+  .button {
+    width: 100%;
+  }
+}

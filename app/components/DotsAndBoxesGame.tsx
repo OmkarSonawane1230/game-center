@@ -1,13 +1,14 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase/config';
 import { doc, getDoc, onSnapshot, updateDoc, arrayUnion, deleteDoc, increment } from 'firebase/firestore';
 import styles from '../styles/DotsAndBoxes.module.css';
-import { ClipboardCopy, Loader2, Users, Eye, Trophy, Home } from 'lucide-react';
-import Link from 'next/link';
+import gameUI from '../styles/GameUI.module.css';
+import { ClipboardCopy, Loader2, Users, Eye, Trophy } from 'lucide-react';
 import { DotsAndBoxesState } from '../types';
 import { getCurrentPlayer } from '../utils/PlayerAuth';
 import PlayerAuth from './PlayerAuth';
+import GameNavBar from './GameNavBar';
 
 interface DotsAndBoxesGameProps {
   gameId: string;
@@ -34,6 +35,18 @@ export default function DotsAndBoxesGame({ gameId }: DotsAndBoxesGameProps) {
   const [showAuth, setShowAuth] = useState(false);
   const [playerRole, setPlayerRole] = useState<'player' | 'spectator' | null>(null);
   const [hoveredLine, setHoveredLine] = useState<string | null>(null);
+  
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [lastTap, setLastTap] = useState(0);
+  const [initialPinchDistance, setInitialPinchDistance] = useState(0);
+  const [initialZoom, setInitialZoom] = useState(1);
+  const [isPinching, setIsPinching] = useState(false);
+  const boardContainerRef = useRef<HTMLDivElement>(null);
+  const boardWrapperRef = useRef<HTMLDivElement>(null);
+  const intrinsicBoardSize = useRef<{ width: number; height: number } | null>(null);
 
   useEffect(() => {
     const player = getCurrentPlayer();
@@ -266,6 +279,175 @@ export default function DotsAndBoxesGame({ gameId }: DotsAndBoxesGameProps) {
     alert('Invite link copied!');
   };
 
+  const getTouchDistance = (touches: React.TouchList): number => {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  const fitToScreen = () => {
+    if (!boardContainerRef.current || !intrinsicBoardSize.current) return;
+    
+    const containerRect = boardContainerRef.current.getBoundingClientRect();
+    
+    const scaleX = (containerRect.width - 40) / intrinsicBoardSize.current.width;
+    const scaleY = (containerRect.height - 40) / intrinsicBoardSize.current.height;
+    const newZoom = Math.min(scaleX, scaleY, 1);
+    
+    setZoom(newZoom);
+    setPan({ x: 0, y: 0 });
+  };
+
+  useEffect(() => {
+    if (boardWrapperRef.current && !intrinsicBoardSize.current && gameState) {
+      setZoom(1);
+      setPan({ x: 0, y: 0 });
+      
+      setTimeout(() => {
+        const boardElement = boardWrapperRef.current?.querySelector(`.${styles.board}`);
+        if (boardElement instanceof HTMLElement) {
+          intrinsicBoardSize.current = {
+            width: boardElement.offsetWidth,
+            height: boardElement.offsetHeight
+          };
+        }
+      }, 100);
+    }
+  }, [gameState]);
+
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (zoom === 1) {
+      fitToScreen();
+    } else {
+      setZoom(1);
+      setPan({ x: 0, y: 0 });
+    }
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.15 : 0.15;
+    setZoom(prev => Math.max(0.3, Math.min(5, prev + delta)));
+  };
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (e.button === 0 && boardContainerRef.current) {
+      e.preventDefault();
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+      boardContainerRef.current.setPointerCapture(e.pointerId);
+    }
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (isDragging && !isPinching) {
+      e.preventDefault();
+      const newX = e.clientX - dragStart.x;
+      const newY = e.clientY - dragStart.y;
+      
+      if (boardContainerRef.current && intrinsicBoardSize.current) {
+        const containerRect = boardContainerRef.current.getBoundingClientRect();
+        const scaledWidth = intrinsicBoardSize.current.width * zoom;
+        const scaledHeight = intrinsicBoardSize.current.height * zoom;
+        
+        const maxX = Math.max(0, (scaledWidth - containerRect.width) / 2);
+        const maxY = Math.max(0, (scaledHeight - containerRect.height) / 2);
+        
+        setPan({
+          x: Math.max(-maxX, Math.min(maxX, newX)),
+          y: Math.max(-maxY, Math.min(maxY, newY))
+        });
+      } else {
+        setPan({ x: newX, y: newY });
+      }
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (boardContainerRef.current) {
+      boardContainerRef.current.releasePointerCapture(e.pointerId);
+    }
+    setIsDragging(false);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const now = Date.now();
+    const DOUBLE_TAP_DELAY = 300;
+    
+    if (e.touches.length === 2) {
+      // Pinch to zoom
+      setIsPinching(true);
+      const distance = getTouchDistance(e.touches);
+      setInitialPinchDistance(distance);
+      setInitialZoom(zoom);
+      setIsDragging(false);
+    } else if (e.touches.length === 1 && !isPinching) {
+      // Check for double tap
+      if (now - lastTap < DOUBLE_TAP_DELAY) {
+        e.preventDefault();
+        if (zoom === 1) {
+          fitToScreen();
+        } else {
+          setZoom(1);
+          setPan({ x: 0, y: 0 });
+        }
+      }
+      setLastTap(now);
+      
+      // Single finger drag (only if not pinching)
+      if (!isPinching) {
+        const touch = e.touches[0];
+        setIsDragging(true);
+        setDragStart({ x: touch.clientX - pan.x, y: touch.clientY - pan.y });
+      }
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && isPinching) {
+      // Pinch to zoom
+      e.preventDefault();
+      const currentDistance = getTouchDistance(e.touches);
+      const scale = currentDistance / initialPinchDistance;
+      const newZoom = Math.max(0.3, Math.min(5, initialZoom * scale));
+      setZoom(newZoom);
+    } else if (isDragging && e.touches.length === 1 && !isPinching) {
+      // Single finger drag
+      e.preventDefault();
+      const touch = e.touches[0];
+      const newX = touch.clientX - dragStart.x;
+      const newY = touch.clientY - dragStart.y;
+      
+      if (boardContainerRef.current && intrinsicBoardSize.current) {
+        const containerRect = boardContainerRef.current.getBoundingClientRect();
+        const scaledWidth = intrinsicBoardSize.current.width * zoom;
+        const scaledHeight = intrinsicBoardSize.current.height * zoom;
+        
+        const maxX = Math.max(0, (scaledWidth - containerRect.width) / 2);
+        const maxY = Math.max(0, (scaledHeight - containerRect.height) / 2);
+        
+        setPan({
+          x: Math.max(-maxX, Math.min(maxX, newX)),
+          y: Math.max(-maxY, Math.min(maxY, newY))
+        });
+      } else {
+        setPan({ x: newX, y: newY });
+      }
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (e.touches.length < 2 && isPinching) {
+      setIsPinching(false);
+      setInitialPinchDistance(0);
+      setInitialZoom(zoom);
+    }
+    if (e.touches.length === 0) {
+      setIsDragging(false);
+    }
+  };
+
   if (showAuth) {
     return <PlayerAuth onAuthenticated={handleAuthenticated} />;
   }
@@ -284,14 +466,66 @@ export default function DotsAndBoxesGame({ gameId }: DotsAndBoxesGameProps) {
     return playerIndex >= 0 ? PLAYER_COLORS[playerIndex % PLAYER_COLORS.length] : '#888';
   };
 
-  return (
-    <div className={styles.gameContainer}>
-      <Link href="/" className={styles.homeButton} data-testid="home-button">
-        <Home size={16} />
-        <span>Home</span>
-      </Link>
+  const GameInfo = () => {
+    const myPlayer = gameState.players.find(p => p.id === currentPlayer?.id);
+    const myColor = myPlayer ? getPlayerColor(myPlayer.id) : '#888';
+    
+    return (
+      <>
+        <div className={styles.navInfo}>
+          {playerRole === 'spectator' ? (
+            <>
+              <Eye size={16} />
+              <span>Spectating</span>
+            </>
+          ) : (
+            <>
+              <span style={{ color: isMyTurn ? myColor : 'var(--text-secondary)' }}>
+                {isMyTurn ? 'Your Turn!' : `${currentTurnPlayer?.name}'s Turn`}
+              </span>
+            </>
+          )}
+        </div>
+        
+        {playerRole !== 'spectator' && myPlayer && (
+          <div className={styles.navInfo}>
+            <span>You: </span>
+            <div style={{ 
+              width: '12px', 
+              height: '12px', 
+              borderRadius: '50%', 
+              backgroundColor: myColor,
+              display: 'inline-block',
+              marginRight: '0.25rem'
+            }} />
+            <span style={{ color: myColor, fontWeight: 700 }}>{myPlayer.symbol}</span>
+          </div>
+        )}
+        
+        <div className={styles.navInfo}>
+          <Users size={16} />
+          <span>{gameState.players.length}/{gameState.maxPlayers}</span>
+        </div>
+        
+        {playerRole !== 'spectator' && (
+          <div className={styles.navInfo}>
+            <Trophy size={16} />
+            <span>{gameState.scores[currentPlayer?.id || ''] || 0}</span>
+          </div>
+        )}
+      </>
+    );
+  };
 
-      {gameState.winner && (
+  return (
+    <>
+      <GameNavBar 
+        gameTitle="Dots and Boxes" 
+        gameInfo={<GameInfo />}
+      />
+      
+      <div className={styles.fullscreenGame}>
+        {gameState.winner && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
             <Trophy size={64} className={styles.modalIcon} />
@@ -340,54 +574,42 @@ export default function DotsAndBoxesGame({ gameId }: DotsAndBoxesGameProps) {
         </div>
       )}
 
-      <h1 className={styles.gameTitle}>Dots and Boxes</h1>
-
-      <div className={styles.gameInfo}>
-        <div className={styles.status} style={{ color: isMyTurn ? getPlayerColor(currentPlayer?.id || '') : 'var(--text-secondary)' }}>
-          <p>{playerRole === 'spectator' ? 'Spectating' : isMyTurn ? 'Your Turn!' : `${currentTurnPlayer?.name}'s Turn`}</p>
-          {playerRole === 'spectator' && <Eye size={32} />}
-        </div>
-
-        <div className={styles.playerCount}>
-          <Users size={20} />
-          <span>{gameState.players.length}/{gameState.maxPlayers} Players</span>
-          {gameState.spectators.length > 0 && (
-            <>
-              <Eye size={16} style={{ marginLeft: '8px' }} />
-              <span>{gameState.spectators.length} Spectator{gameState.spectators.length !== 1 ? 's' : ''}</span>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Scoreboard */}
-      <div className={styles.scoreboard}>
-        {gameState.players.map((player, idx) => (
-          <div 
-            key={player.id} 
-            className={styles.scoreCard}
-            style={{ 
-              borderColor: getPlayerColor(player.id),
-              background: currentTurnPlayer?.id === player.id ? `${getPlayerColor(player.id)}15` : 'var(--bg-tertiary)'
-            }}
-          >
-            <div style={{ 
-              width: '12px', 
-              height: '12px', 
-              borderRadius: '50%', 
-              backgroundColor: getPlayerColor(player.id) 
-            }} />
-            <span className={styles.playerName}>{player.name}</span>
-            <span className={styles.score}>{gameState.scores[player.id] || 0}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Game Board */}
-      <div className={styles.board} style={{
-        gridTemplateColumns: `repeat(${gameState.gridCols + 1}, 1fr)`,
-        gridTemplateRows: `repeat(${gameState.gridRows + 1}, 1fr)`,
-      }}>
+      {/* Game Board with Zoom and Pan (scroll to zoom, drag to pan) */}
+      <div 
+        ref={boardContainerRef}
+        className={`${gameUI.boardContainer} ${isDragging ? gameUI.dragging : ''}`}
+        style={{ 
+          width: '95vw',
+          maxWidth: '100%',
+          height: 'calc(100vh - 120px)',
+          margin: '0 auto',
+          position: 'relative'
+        }}
+        onDoubleClick={handleDoubleClick}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onWheel={handleWheel}
+      >
+        <div 
+          ref={boardWrapperRef}
+          className={gameUI.boardWrapper}
+          style={{
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+            transformOrigin: 'center center',
+            willChange: 'transform',
+            transition: isDragging ? 'none' : 'transform 0.2s ease-out',
+            imageRendering: 'crisp-edges'
+          }}
+        >
+          <div className={styles.board} style={{
+            gridTemplateColumns: `repeat(${gameState.gridCols + 1}, 60px)`,
+            gridTemplateRows: `repeat(${gameState.gridRows + 1}, 60px)`,
+          }}>
         {/* Render dots and lines */}
         {Array.from({ length: gameState.gridRows + 1 }).map((_, row) => (
           Array.from({ length: gameState.gridCols + 1 }).map((_, col) => {
@@ -453,13 +675,14 @@ export default function DotsAndBoxesGame({ gameId }: DotsAndBoxesGameProps) {
             );
           })
         ))}
+          </div>
+        </div>
       </div>
 
-      {playerRole === 'player' && (
-        <div className={styles.playerInfo}>
-          Playing as: <strong style={{ color: getPlayerColor(currentPlayer?.id || '') }}>{currentPlayer?.name}</strong>
-        </div>
-      )}
-    </div>
+      <div className={styles.zoomHint}>
+        Scroll/Pinch to zoom · Drag to pan · Double-tap/click to fit screen
+      </div>
+      </div>
+    </>
   );
 }

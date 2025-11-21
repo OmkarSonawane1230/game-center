@@ -12,6 +12,22 @@ export interface SmallBoardState {
   squares: SquareValue[]; // Its squares contain only player moves
 }
 
+// Friend request status
+export interface FriendRequest {
+  from: string; // Player ID who sent the request
+  fromName: string; // Name of player who sent request
+  timestamp: Timestamp;
+}
+
+// Game invitation
+export interface GameInvitation {
+  gameId: string;
+  gameType: 'ultimate-tictactoe' | 'dots-and-boxes';
+  from: string; // Player ID who sent the invitation
+  fromName: string; // Name of player who sent invitation
+  timestamp: Timestamp;
+}
+
 // Player information
 export interface Player {
   id: string;
@@ -20,6 +36,9 @@ export interface Player {
   gamesPlayed: number;
   gamesWon: number;
   createdAt: Timestamp;
+  friends: string[]; // Array of friend player IDs
+  friendRequests: FriendRequest[]; // Pending friend requests
+  gameInvitations: GameInvitation[]; // Pending game invitations
 }
 
 // Player in game context

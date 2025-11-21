@@ -31,7 +31,10 @@ export async function registerPlayer(name: string, password: string): Promise<{ 
       password: hashedPassword,
       gamesPlayed: 0,
       gamesWon: 0,
-      createdAt: serverTimestamp()
+      createdAt: serverTimestamp(),
+      friends: [],
+      friendRequests: [],
+      gameInvitations: []
     });
 
     // Store in localStorage
@@ -109,7 +112,29 @@ export async function getPlayerStats(playerId: string): Promise<Player | null> {
     
     if (querySnapshot.empty) return null;
     
-    return { id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() } as Player;
+    const data = querySnapshot.docs[0].data();
+    const player: Player = {
+      id: querySnapshot.docs[0].id,
+      ...data,
+      friends: data.friends || [],
+      friendRequests: data.friendRequests || [],
+      gameInvitations: data.gameInvitations || []
+    } as Player;
+    
+    // Update document if missing new fields
+    if (!data.friends || !data.friendRequests || !data.gameInvitations) {
+      try {
+        await updateDoc(doc(db, 'players', player.id), {
+          friends: player.friends,
+          friendRequests: player.friendRequests,
+          gameInvitations: player.gameInvitations
+        });
+      } catch (err) {
+        console.error('Error updating player fields:', err);
+      }
+    }
+    
+    return player;
   } catch (error) {
     console.error('Error getting player stats:', error);
     return null;

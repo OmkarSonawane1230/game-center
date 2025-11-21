@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./styles/globals.css";
 import "./styles/Home.module.css";
 import "./styles/UltimateTicTacToe.module.css";
-
-const inter = Inter({ subsets: ["latin"] });
+import ClientBodyWrapper from "./components/ClientBodyWrapper";
 
 export const metadata: Metadata = {
-  title: "Ultimate Game Hub",
-  description: "A collection of awesome browser games",
+  title: "Retro Game Hub - Premium Gaming Experience",
+  description: "A premium collection of retro browser games with real-time multiplayer",
 };
 
 export default function RootLayout({
@@ -18,7 +16,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body>
+        <ClientBodyWrapper>
+          {children}
+        </ClientBodyWrapper>
+      </body>
     </html>
   );
 }

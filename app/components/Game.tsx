@@ -2,11 +2,12 @@
 import { useState, useEffect } from 'react';
 import Board from './Board';
 import GameModal from './GameModal';
+import GameNavBar from './GameNavBar';
 import { db } from '../firebase/config';
 import { doc, onSnapshot, updateDoc, arrayUnion, deleteDoc, increment } from 'firebase/firestore';
 import styles from '../styles/UltimateTicTacToe.module.css';
-import { X, Circle, ClipboardCopy, Loader2, Users, Eye, Home } from 'lucide-react';
-import Link from 'next/link';
+import gameUI from '../styles/GameUI.module.css';
+import { X, Circle, ClipboardCopy, Loader2, Users, Eye } from 'lucide-react';
 import { GameState, SquareValue, BoardResult, GamePlayer } from '../types';
 import { getCurrentPlayer } from '../utils/PlayerAuth';
 import PlayerAuth from './PlayerAuth';
@@ -239,93 +240,73 @@ export default function Game({ gameId }: GameProps) {
     return winnerPlayer ? `${winnerPlayer.name} Wins!` : `Winner: ${gameWinner}`;
   };
 
-  return (
-    <div className={styles.gameContainer}>
-      <Link href="/" className={styles.homeButton} data-testid="home-button">
-        <Home size={16} />
-        <span>Home</span>
-      </Link>
-
-      {gameWinner && (
-        <GameModal
-          message={getWinnerMessage()}
-          buttonText="Play Again"
-          onButtonClick={handleRestart}
-          isPlayerOne={players[0]?.id === currentPlayer?.id}
-        />
-      )}
-      {isWaitingForOpponent && !gameWinner && playerRole !== 'spectator' && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
-            <h2 className={styles.modalMessage}>Waiting for Opponent</h2>
-            <p>Share this link with a friend to play!</p>
-            <div className={styles.inviteBox}>
-              <input type="text" readOnly value={typeof window !== 'undefined' ? window.location.href : ''} />
-              <button onClick={copyInviteLink}><ClipboardCopy /></button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <h1 className={styles.gameTitle}>Ultimate Tic-Tac-Toe</h1>
-
-      <div className={styles.gameInfo}>
-        <div className={styles.status} style={{ color: playerRole === 'spectator' ? '#888' : turnColor }}>
-          <p>{statusText}</p>
-          {!isWaitingForOpponent && playerRole !== 'spectator' && <CurrentTurnIcon size={32} />}
-          {playerRole === 'spectator' && <Eye size={32} />}
-        </div>
-
-        <div className={styles.playerCount}>
-          <Users size={20} />
-          <span>{players.length}/2 Players</span>
-          {spectators.length > 0 && (
-            <>
-              <Eye size={16} style={{ marginLeft: '8px' }} />
-              <span>{spectators.length} Spectator{spectators.length !== 1 ? 's' : ''}</span>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Player names display */}
-      {players.length > 0 && (
-        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-          {players[0] && (
-            <div className={styles.playerInfo} style={{ borderColor: 'var(--player-x)' }}>
-              <X color='var(--player-x)' size={20} />
-              <span>{players[0].name}</span>
-            </div>
-          )}
-          {players[1] && (
-            <div className={styles.playerInfo} style={{ borderColor: 'var(--player-o)' }}>
-              <Circle color='var(--player-o)' size={20} />
-              <span>{players[1].name}</span>
-            </div>
-          )}
-        </div>
-      )}
-
-      <Board
-        smallBoards={gameState.boardState}
-        onPlay={handlePlay}
-        activeBoard={gameState.activeBoard}
-        disabled={playerRole === 'spectator'}
-      />
-
-      <div className={styles.playerInfo}>
+  const GameInfo = () => (
+    <>
+      <div className={styles.navInfo}>
         {playerRole === 'spectator' ? (
-          <span className={styles.spectatorBadge}>
-            <Eye size={20} /> Spectator Mode - You are watching this game
-          </span>
+          <>
+            <Eye size={16} />
+            <span>Spectating</span>
+          </>
         ) : (
           <>
-            You are playing as: {playerRole === 'X' ? <X color='var(--player-x)' /> : playerRole === 'O' ? <Circle color='var(--player-o)' /> : 'Loading...'}
-            <span style={{ marginLeft: '0.5rem' }}>({currentPlayer?.name})</span>
+            <CurrentTurnIcon size={16} style={{ color: turnColor }} />
+            <span style={{ color: turnColor }}>{statusText}</span>
           </>
         )}
       </div>
-    </div>
+      
+      {playerRole !== 'spectator' && (
+        <div className={styles.navInfo}>
+          <span>You:   </span>
+          {playerRole === 'X' ? <X size={16} color='var(--player-x)' /> : playerRole === 'O' ? <Circle size={16} color='var(--player-o)' /> : null}
+        </div>
+      )}
+      
+      <div className={styles.navInfo}>
+        <Users size={16} />
+        <span>{players.length}/2</span>
+      </div>
+    </>
+  );
+
+  return (
+    <>
+      <GameNavBar 
+        gameTitle="Ultimate Tic-Tac-Toe" 
+        gameInfo={<GameInfo />}
+      />
+      
+      <div className={styles.fullscreenGame}>
+        {gameWinner && (
+          <GameModal
+            message={getWinnerMessage()}
+            buttonText="Play Again"
+            onButtonClick={handleRestart}
+            isPlayerOne={players[0]?.id === currentPlayer?.id}
+          />
+        )}
+        {isWaitingForOpponent && !gameWinner && playerRole !== 'spectator' && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modalContent}>
+              <h2 className={styles.modalMessage}>Waiting for Opponent</h2>
+              <p>Share this link with a friend to play!</p>
+              <div className={styles.inviteBox}>
+                <input type="text" readOnly value={typeof window !== 'undefined' ? window.location.href : ''} />
+                <button onClick={copyInviteLink}><ClipboardCopy /></button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <Board
+          smallBoards={gameState.boardState}
+          onPlay={handlePlay}
+          activeBoard={gameState.activeBoard}
+          disabled={playerRole === 'spectator'}
+        />
+      </div>
+    </>
   );
 }
 
